@@ -697,21 +697,187 @@ footer a:hover { color: #999; text-decoration: none; }
 }
 .movie-card:hover .hero-play-badge { opacity: 1; }
 
+/* ── HAMBURGER MENU BUTTON (mobile only) ───────────── */
+.hamburger-btn {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  flex-direction: column; gap: 5px; padding: 4px;
+  z-index: 102;
+}
+.hamburger-btn span {
+  display: block; width: 22px; height: 2px;
+  background: white; border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Mobile slide-down nav drawer */
+.mobile-nav-drawer {
+  display: none;
+  position: fixed; top: 56px; left: 0; right: 0; z-index: 101;
+  background: rgba(15,15,15,0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 12px 0 16px;
+  transform: translateY(-8px);
+  opacity: 0;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+.mobile-nav-drawer.open {
+  opacity: 1; transform: translateY(0);
+  pointer-events: all;
+}
+.mobile-nav-drawer a {
+  display: block; padding: 13px 24px;
+  color: rgba(229,229,229,0.9); text-decoration: none;
+  font-size: 0.95rem; font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.mobile-nav-drawer a:hover,
+.mobile-nav-drawer a.active {
+  color: white;
+  border-left-color: var(--netflix-red);
+  background: rgba(255,255,255,0.04);
+}
+
 @media (max-width: 768px) {
-  .navbar { padding: 0 20px; height: 56px; }
+  /* ── Navbar ── */
+  .navbar { padding: 0 16px; height: 56px; }
+  .navbar-left { gap: 0; }
   .nav-links { display: none; }
-  .hero-content { padding: 0 20px; }
-  .hero-logo-img { font-size: 3rem; }
-  .hero-desc { font-size: 0.9rem; }
-  .row-header { padding: 0 20px; }
-  .slider { padding: 10px 20px; }
-  .movie-card { width: 38vw; }
-  .movie-card:hover { transform: scale(1.2); }
-  .search-row { padding: 0 20px; }
-  footer { padding: 30px 20px; }
-  .mic-panel { right: 12px; width: 250px; }
-  .voice-fab { right: 16px; bottom: 20px; }
-  .panel-toggle-btn { right: 16px; }
+  .hamburger-btn { display: flex; }
+  .mobile-nav-drawer { display: block; }
+
+  /* Collapse search on mobile — icon only by default, full width on focus */
+  .nav-search input {
+    width: 130px;
+    font-size: 0.78rem;
+    padding: 6px 8px 6px 28px;
+    transition: width 0.3s ease, border-color 0.2s;
+  }
+  .nav-search input:focus { width: 180px; }
+
+  /* ── Hero ── */
+  .hero {
+    height: 72vw; min-height: 300px;
+    padding-bottom: 60px;
+    align-items: flex-end;
+  }
+  .hero-content { padding: 0 16px; max-width: 100%; }
+  .hero-logo-img { font-size: 2.4rem; margin-bottom: 10px; }
+  .hero-desc {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    /* Truncate long descriptions on small screens */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hero-btns { gap: 8px; }
+  .btn-play, .btn-info {
+    padding: 8px 16px;
+    font-size: 0.82rem;
+  }
+  .btn-play svg, .btn-info svg { width: 16px; height: 16px; }
+  .hero-slide-indicators { bottom: 68px; left: 16px; }
+  .hero-maturity { display: none; }
+
+  /* ── Rows ── */
+  .rows-container { margin-top: -50px; padding-bottom: 50px; }
+  .row { margin-bottom: 5vw; }
+  .row-header { padding: 0 16px; margin-bottom: 0.4em; }
+  .row-title { font-size: 0.78rem; letter-spacing: 0.8px; }
+  .row-explore { opacity: 1; } /* always visible on mobile */
+
+  /* Slider */
+  .slider { padding: 8px 16px; gap: 6px; }
+  .slider-wrapper { padding: 10px 0; margin: -10px 0; }
+
+  /* Slider buttons hidden on mobile — use swipe */
+  .slider-btn { display: none; }
+
+  /* Cards — bigger on mobile for finger-friendly tapping */
+  .movie-card {
+    width: 40vw;
+    min-width: 120px;
+    max-width: 180px;
+  }
+  /* Disable hover scale & popup on mobile; tap opens modal directly */
+  .movie-card.card-expanded { transform: none !important; z-index: 1 !important; }
+  #cardFloatingPopup { display: none !important; }
+
+  /* Search results grid */
+  .search-row { padding: 0 16px; margin-bottom: 28px; }
+  .search-row.active { padding-top: 20px; }
+  .search-row .row-title { font-size: 1rem; margin-bottom: 12px; }
+  .search-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 5px; }
+
+  /* ── Modal ── */
+  .modal {
+    width: 100vw; max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 12px 12px 0 0;
+    margin-top: auto;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+  }
+  .modal-backdrop { aspect-ratio: 16/9; }
+  .modal-title-big { font-size: 1.6rem; }
+  .modal-backdrop-content { padding: 14px 16px; }
+  .modal-btns { gap: 6px; margin-top: 10px; }
+  .modal-body { padding: 8px 16px 24px; }
+  .modal-two-col { flex-direction: column; gap: 14px; }
+  .modal-right { font-size: 0.78rem; }
+  .modal-badges { gap: 6px; margin-bottom: 10px; }
+  .modal-overview { font-size: 0.83rem; line-height: 1.6; }
+
+  /* ── Player ── */
+  .player-header { padding: 14px 16px; }
+  .player-controls { padding: 40px 16px 16px; }
+  .player-ctrl-row { gap: 8px; }
+  .player-time { font-size: 0.72rem; }
+  .player-vol-slider { width: 60px; }
+  .player-info-panel {
+    flex-direction: column;
+    gap: 12px;
+    max-height: none;
+    padding: 16px;
+  }
+  .player-info-poster { width: 70px; }
+  .player-info-title { font-size: 1.1rem; }
+  .player-info-desc { font-size: 0.8rem; }
+
+  /* ── Voice / Mic ── */
+  .voice-fab { right: 14px; bottom: 16px; width: 48px; height: 48px; font-size: 1.2rem; }
+  .voice-toast { right: 14px; bottom: 76px; max-width: 220px; font-size: 0.78rem; }
+  .mic-panel { right: 10px; bottom: 76px; width: calc(100vw - 20px); max-width: 300px; }
+  .panel-toggle-btn { right: 14px; bottom: 82px; }
+
+  /* ── Footer ── */
+  footer { padding: 28px 16px 20px; font-size: 0.72rem; }
+  footer .footer-links { gap: 10px; }
+  .footer-logo { font-size: 1.1rem; margin-bottom: 12px; }
+
+  /* ── My List empty state ── */
+  #myListEmpty { padding: 20px 16px; }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .hero-logo-img { font-size: 2rem; }
+  .hero-desc { -webkit-line-clamp: 2; }
+  .movie-card { width: 44vw; min-width: 110px; }
+  .nav-search input { width: 110px; }
+  .nav-search input:focus { width: 150px; }
+  .btn-play, .btn-info { padding: 7px 12px; font-size: 0.78rem; }
 }
 
 /* ── PAGE LOAD FADE-IN ─────────────────────────────── */
@@ -765,6 +931,9 @@ footer a:hover { color: #999; text-decoration: none; }
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
   <div class="navbar-left">
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <a class="logo" href="#" onclick="goHome()">CLONEFLIX</a>
     <ul class="nav-links">
       <li><a href="#" onclick="goHome()" id="navHome">Home</a></li>
@@ -784,7 +953,14 @@ footer a:hover { color: #999; text-decoration: none; }
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-drawer" id="mobileNavDrawer">
+  <a href="#" id="mNavHome"   onclick="goHome();   closeMobileNav()">Home</a>
+  <a href="#" id="mNavTV"     onclick="goSection('tvshows'); closeMobileNav()">TV Shows</a>
+  <a href="#" id="mNavMovies" onclick="goSection('movies');  closeMobileNav()">Movies</a>
+  <a href="#" id="mNavNew"    onclick="goSection('new');     closeMobileNav()">New &amp; Popular</a>
+  <a href="#" id="mNavMyList" onclick="goSection('mylist');  closeMobileNav()">My List</a>
+</div>
 <div class="hero" id="hero">
   <div class="hero-bg" id="heroBg"></div>
   <div class="hero-vignette"></div>
@@ -2051,6 +2227,42 @@ async function findAndPlayMovie(query) {
     showVoiceStatus('❌ Search failed');
   }
 }
+
+// ── MOBILE NAV DRAWER ────────────────────────────────
+function toggleMobileNav() {
+  const btn = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('mobileNavDrawer');
+  const isOpen = drawer.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+}
+function closeMobileNav() {
+  document.getElementById('mobileNavDrawer').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+}
+// Close drawer on outside tap
+document.addEventListener('click', e => {
+  const drawer = document.getElementById('mobileNavDrawer');
+  const btn = document.getElementById('hamburgerBtn');
+  if (drawer.classList.contains('open') && !drawer.contains(e.target) && !btn.contains(e.target)) {
+    closeMobileNav();
+  }
+});
+// Sync active state to mobile drawer
+const NAV_SYNC = {
+  navHome: 'mNavHome', navTV: 'mNavTV', navMovies: 'mNavMovies',
+  navNew: 'mNavNew', navMyList: 'mNavMyList'
+};
+const _origSetNavActive = setNavActive;
+// Wrap setNavActive to also update mobile drawer links
+(function() {
+  const orig = setNavActive;
+  window.setNavActive = function(id) {
+    orig(id);
+    document.querySelectorAll('.mobile-nav-drawer a').forEach(a => a.classList.remove('active'));
+    const mId = NAV_SYNC[id];
+    if (mId) { const el = document.getElementById(mId); if(el) el.classList.add('active'); }
+  };
+})();
 
 loadAll();
 </script>
