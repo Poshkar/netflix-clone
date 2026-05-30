@@ -1804,7 +1804,8 @@ async function filterMovies(query) {
 // ── VOICE SEARCH ─────────────────────────────────────
 let recognition = null;
 let isListening = false;
-let autoListen = false;
+let userWantsListening = false; // true while user wants mic on; drives mobile restart
+let micPermissionGranted = false; // track if we already have permission
 
 function showVoiceStatus(msg, duration) {
   const s  = document.getElementById('voiceStatus');
@@ -1864,7 +1865,7 @@ function handleVoiceCommand(cmd) {
     }
     // Just "play" with no movie name — play current hero
     openModal(heroMovieId);
-    showVoiceStatus('▶ Opening movie...');
+    showVoiceStatus('▶ Opening movie');
     return;
   }
 
@@ -1887,21 +1888,22 @@ function initVoice() {
   if (!SR) { showVoiceStatus('❌ Voice not supported. Use Chrome.'); return false; }
 
   recognition = new SR();
-  recognition.continuous = true;       // KEEP SESSION OPEN — no restart = no re-prompt
+  // continuous=true works on desktop Chrome but mobile browsers (Android/iOS) silently
+  // end the session after each result. We handle this in onend by restarting if the
+  // user hasn't manually stopped — giving seamless continuous behaviour on all devices.
+  recognition.continuous = true;
   recognition.interimResults = false;
   recognition.lang = 'en-US';
   recognition.maxAlternatives = 1;
 
   recognition.onstart = () => {
     isListening = true;
+    micPermissionGranted = true;
     updateVoiceBtn();
     showVoiceStatus('🎙 Listening...', 0);
-    // Start meter now — permission already granted since recognition started
-    if (!micStream) startMicMeter();
   };
 
   recognition.onresult = (e) => {
-    // With continuous=true, grab only the latest final result
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
         const transcript = e.results[i][0].transcript.trim();
@@ -1916,48 +1918,69 @@ function initVoice() {
   recognition.onerror = (e) => {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
       showVoiceStatus('❌ Mic permission denied');
+      micPermissionGranted = false;
       isListening = false;
-      autoListen = false;
+      userWantsListening = false;
       updateVoiceBtn();
       return;
     }
-    // no-speech and aborted are harmless with continuous mode
+    // no-speech and aborted are non-fatal — onend will handle restart
     if (e.error !== 'no-speech' && e.error !== 'aborted') {
       showVoiceStatus('⚠️ Error: ' + e.error);
     }
   };
 
   recognition.onend = () => {
-    // Only fires if session truly ends (e.g. browser timeout ~60s)
-    // Restart seamlessly if user hasn't stopped
     isListening = false;
-    if (autoListen) {
+    // If the user hasn't tapped stop, restart immediately — this makes mobile work
+    // because mobile browsers end the session after each utterance even with continuous=true
+    if (userWantsListening) {
       setTimeout(() => {
-        if (autoListen) {
-          try { recognition.start(); }
-          catch(e) {}
+        if (userWantsListening) {
+          try { recognition.start(); } catch(e) {}
         }
-      }, 200);
+      }, 150);
     } else {
       updateVoiceBtn();
-      hideVoiceStatus();
+      const ct = document.getElementById('voiceCommandText');
+      if (ct && ct.textContent === '🎙 Listening...') hideVoiceStatus();
     }
   };
 
   return true;
 }
 
-function startListening() {
-  if (!recognition) { if (!initVoice()) return; }
+async function startListening() {
   if (isListening) return; // already running
-  autoListen = true;
+
+  // Acquire mic permission ONCE — stream stays alive for the whole session,
+  // so the browser never shows the permission prompt again.
+  const ok = await acquireMicPermission();
+  if (!ok) return;
+
+  if (!recognition) { if (!initVoice()) return; }
+
+  userWantsListening = true;
+  micPermissionGranted = true;
   updateVoiceBtn();
-  try { recognition.start(); }
-  catch(e) {}
+  try {
+    recognition.start();
+  } catch(err) {
+    // If recognition object is in a bad state, recreate it and retry
+    recognition = null;
+    if (initVoice()) {
+      try { recognition.start(); } catch(e2) {
+        showVoiceStatus('❌ Could not start mic — tap to retry');
+        isListening = false;
+        userWantsListening = false;
+        updateVoiceBtn();
+      }
+    }
+  }
 }
 
 function stopListening() {
-  autoListen = false;
+  userWantsListening = false;
   isListening = false;
   if (recognition) { try { recognition.abort(); } catch(e) {} }
   updateVoiceBtn();
@@ -1965,24 +1988,27 @@ function stopListening() {
 }
 
 function toggleVoice() {
-  if (autoListen || isListening) stopListening();
+  if (isListening) stopListening();
   else startListening();
 }
 
 function updateVoiceBtn() {
   const btn = document.getElementById('voiceBtn');
   if (!btn) return;
-  const active = autoListen || isListening;
-  btn.classList.toggle('listening', active);
-  btn.textContent = active ? '⏹' : '🎤';
+  btn.classList.toggle('listening', isListening);
+  btn.textContent = isListening ? '⏹' : '🎤';
 }
 
-// ── MIC METER ────────────────────────────────────────
+// ── MIC PERMISSION + METER ───────────────────────────
+// getUserMedia is called ONCE on first tap and the stream is kept alive
+// for the whole page session — browser never prompts for permission again.
 let micStream = null, audioCtx = null, analyser = null, animFrame = null;
 
-async function startMicMeter() {
+async function acquireMicPermission() {
+  if (micStream) return true; // already have it, no prompt
   try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    // Wire up level-meter analyser (reuses the same stream, no extra permission)
     audioCtx = new AudioContext();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
@@ -1996,11 +2022,20 @@ async function startMicMeter() {
       animFrame = requestAnimationFrame(draw);
     }
     draw();
-    document.getElementById('debugStatus').textContent = '✅ Mic connected';
+    const ds = document.getElementById('debugStatus');
+    if (ds) ds.textContent = '✅ Mic ready';
+    return true;
   } catch(e) {
-    document.getElementById('debugStatus').textContent = '❌ ' + e.message;
+    const ds = document.getElementById('debugStatus');
+    if (ds) ds.textContent = '❌ ' + e.message;
+    showVoiceStatus('❌ Mic permission denied');
+    micPermissionGranted = false;
+    return false;
   }
 }
+
+// No-op alias — recognition.onstart calls this but acquireMicPermission already ran
+async function startMicMeter() {}
 
 // ── PANEL & FALLBACK ─────────────────────────────────
 function togglePanel() {
@@ -2022,7 +2057,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space' && e.target === document.body) {
     const panel = document.getElementById('micPanel');
     const panelOpen = panel && panel.style.display === 'block';
-    if (panelOpen) {
+    if (panelOpen && !isListening) {
       e.preventDefault();
       startListening();
     }
