@@ -858,8 +858,9 @@ footer a:hover { color: #999; text-decoration: none; }
   /* ── Voice / Mic ── */
   .voice-fab { right: 14px; bottom: 16px; width: 48px; height: 48px; font-size: 1.2rem; }
   .voice-toast { right: 14px; bottom: 76px; max-width: 220px; font-size: 0.78rem; }
-  .mic-panel { right: 10px; bottom: 76px; width: calc(100vw - 20px); max-width: 300px; }
-  .panel-toggle-btn { right: 14px; bottom: 82px; }
+  .mic-panel { right: 10px; bottom: 72px; width: calc(100vw - 20px); max-width: 340px; padding: 14px; }
+  /* Move the panel toggle label above the toast area to avoid overlap */
+  .panel-toggle-btn { right: 70px; bottom: 24px; font-size: 0.65rem; }
 
   /* ── Footer ── */
   footer { padding: 28px 16px 20px; font-size: 0.72rem; }
@@ -1806,6 +1807,8 @@ let recognition = null;
 let isListening = false;
 let userWantsListening = false; // true while user wants mic on; drives mobile restart
 let micPermissionGranted = false; // track if we already have permission
+let restartTimer = null; // debounce restart attempts
+let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function showVoiceStatus(msg, duration) {
   const s  = document.getElementById('voiceStatus');
@@ -1883,18 +1886,42 @@ function handleVoiceCommand(cmd) {
   }
 }
 
+function scheduleRestart() {
+  // Clear any pending restart to avoid double-starts
+  clearTimeout(restartTimer);
+  if (!userWantsListening) return;
+  // Use a longer delay on mobile to ensure the previous session is fully torn down
+  const delay = isMobile ? 400 : 150;
+  restartTimer = setTimeout(() => {
+    if (!userWantsListening || isListening) return;
+    try {
+      recognition.start();
+    } catch(e) {
+      // Recognition object may be in a bad state; recreate and try once more
+      recognition = null;
+      if (initVoice()) {
+        try { recognition.start(); } catch(e2) {
+          showVoiceStatus('❌ Mic error — tap to retry');
+          userWantsListening = false;
+          updateVoiceBtn();
+        }
+      }
+    }
+  }, delay);
+}
+
 function initVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { showVoiceStatus('❌ Voice not supported. Use Chrome.'); return false; }
 
   recognition = new SR();
-  // continuous=true works on desktop Chrome but mobile browsers (Android/iOS) silently
-  // end the session after each result. We handle this in onend by restarting if the
-  // user hasn't manually stopped — giving seamless continuous behaviour on all devices.
-  recognition.continuous = true;
-  recognition.interimResults = false;
+  // On mobile, continuous=true is often ignored by the browser and the session ends
+  // after each utterance. We set it true for desktop and handle mobile via onend restart.
+  // Setting interimResults=true lets us show partial transcripts so users know it's working.
+  recognition.continuous = !isMobile; // mobile restarts via onend instead
+  recognition.interimResults = true;  // show partial results for real-time feedback
   recognition.lang = 'en-US';
-  recognition.maxAlternatives = 1;
+  recognition.maxAlternatives = 3;    // more candidates → better accuracy on mobile
 
   recognition.onstart = () => {
     isListening = true;
@@ -1904,43 +1931,55 @@ function initVoice() {
   };
 
   recognition.onresult = (e) => {
+    let interimTranscript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) {
-        const transcript = e.results[i][0].transcript.trim();
+      const result = e.results[i];
+      if (result.isFinal) {
+        const transcript = result[0].transcript.trim();
         if (transcript) {
           showVoiceStatus(`✅ Heard: "${transcript}"`);
           handleVoiceCommand(transcript);
         }
+      } else {
+        // Show interim (partial) transcript so users get live feedback on mobile
+        interimTranscript += result[0].transcript;
       }
+    }
+    if (interimTranscript) {
+      showVoiceStatus(`🎙 "${interimTranscript}"...`, 0);
     }
   };
 
   recognition.onerror = (e) => {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-      showVoiceStatus('❌ Mic permission denied');
+      showVoiceStatus('❌ Mic permission denied. Check browser settings.');
       micPermissionGranted = false;
       isListening = false;
       userWantsListening = false;
+      clearTimeout(restartTimer);
       updateVoiceBtn();
       return;
     }
-    // no-speech and aborted are non-fatal — onend will handle restart
-    if (e.error !== 'no-speech' && e.error !== 'aborted') {
-      showVoiceStatus('⚠️ Error: ' + e.error);
+    if (e.error === 'no-speech') {
+      // Silent timeout — just restart quietly
+      return;
+    }
+    if (e.error === 'network') {
+      showVoiceStatus('⚠️ Network error — retrying...');
+      return;
+    }
+    if (e.error !== 'aborted') {
+      showVoiceStatus('⚠️ ' + e.error);
     }
   };
 
   recognition.onend = () => {
     isListening = false;
-    // If the user hasn't tapped stop, restart immediately — this makes mobile work
-    // because mobile browsers end the session after each utterance even with continuous=true
     if (userWantsListening) {
-      setTimeout(() => {
-        if (userWantsListening) {
-          try { recognition.start(); } catch(e) {}
-        }
-      }, 150);
+      // Restart seamlessly — on mobile this is the primary mechanism for continuous listening
+      scheduleRestart();
     } else {
+      clearTimeout(restartTimer);
       updateVoiceBtn();
       const ct = document.getElementById('voiceCommandText');
       if (ct && ct.textContent === '🎙 Listening...') hideVoiceStatus();
@@ -1953,8 +1992,34 @@ function initVoice() {
 async function startListening() {
   if (isListening) return; // already running
 
-  // Acquire mic permission ONCE — stream stays alive for the whole session,
-  // so the browser never shows the permission prompt again.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showVoiceStatus('❌ Voice not supported. Use Chrome or Safari.'); return; }
+
+  // On iOS/Safari, recognition.start() MUST be called synchronously inside the
+  // user-gesture handler — any await before it breaks the gesture chain and causes
+  // a "not-allowed" error. So on mobile we skip getUserMedia and start recognition
+  // directly. getUserMedia is only used for the desktop level-meter visualisation.
+  if (isMobile) {
+    if (!recognition) { if (!initVoice()) return; }
+    userWantsListening = true;
+    micPermissionGranted = true;
+    updateVoiceBtn();
+    try {
+      recognition.start();
+    } catch(err) {
+      recognition = null;
+      if (initVoice()) {
+        try { recognition.start(); } catch(e2) {
+          showVoiceStatus('❌ Could not start mic — tap to retry');
+          userWantsListening = false;
+          updateVoiceBtn();
+        }
+      }
+    }
+    return;
+  }
+
+  // Desktop: acquire mic stream first (for level-meter), then start recognition
   const ok = await acquireMicPermission();
   if (!ok) return;
 
@@ -1966,7 +2031,6 @@ async function startListening() {
   try {
     recognition.start();
   } catch(err) {
-    // If recognition object is in a bad state, recreate it and retry
     recognition = null;
     if (initVoice()) {
       try { recognition.start(); } catch(e2) {
@@ -1982,21 +2046,23 @@ async function startListening() {
 function stopListening() {
   userWantsListening = false;
   isListening = false;
+  clearTimeout(restartTimer);
   if (recognition) { try { recognition.abort(); } catch(e) {} }
   updateVoiceBtn();
   hideVoiceStatus();
 }
 
 function toggleVoice() {
-  if (isListening) stopListening();
+  if (isListening || userWantsListening) stopListening();
   else startListening();
 }
 
 function updateVoiceBtn() {
   const btn = document.getElementById('voiceBtn');
   if (!btn) return;
-  btn.classList.toggle('listening', isListening);
-  btn.textContent = isListening ? '⏹' : '🎤';
+  const active = isListening || userWantsListening;
+  btn.classList.toggle('listening', active);
+  btn.textContent = active ? '⏹' : '🎤';
 }
 
 // ── MIC PERMISSION + METER ───────────────────────────
@@ -2005,6 +2071,7 @@ function updateVoiceBtn() {
 let micStream = null, audioCtx = null, analyser = null, animFrame = null;
 
 async function acquireMicPermission() {
+  if (isMobile) return true; // mobile skips getUserMedia — recognition handles permission
   if (micStream) return true; // already have it, no prompt
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
