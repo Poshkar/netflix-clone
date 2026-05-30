@@ -905,19 +905,19 @@ footer a:hover { color: #999; text-decoration: none; }
   .rows-container.search-active { padding-top: 136px; }
 
   /* ── Search results (mobile) ── */
-  .search-page { padding: 136px 14px 50px; }
-  .search-page-query { font-size: 1rem; }
-  .search-page-query strong { font-size: 1.2rem; }
-  .search-spotlight {
-    grid-template-columns: 90px 1fr;
-    min-height: 160px;
-  }
-  .spotlight-title { font-size: 1.8rem; }
-  .spotlight-info { padding: 18px 16px; }
+  .search-page { padding: 100px 0 50px; }
+  .search-page-header { padding: 0 16px 16px; flex-wrap: wrap; gap: 8px; }
+  .search-page-query { font-size: 1.5rem; }
+  .search-page-count { margin-left: 0; }
+  .search-spotlight { margin: 0 14px 32px; min-height: 220px; }
+  .spotlight-poster { width: 90px; right: 16px; }
+  .spotlight-info { padding: 22px 20px; }
+  .spotlight-title { font-size: 2rem; }
   .spotlight-overview { -webkit-line-clamp: 2; }
-  .spotlight-btns .btn-info { display: none; }
-  .search-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; }
-  .search-suggestions { min-width: 200px; max-height: 280px; overflow-y: auto; }
+  .spotlight-btns .btn-play, .spotlight-btns .btn-info { padding: 8px 14px; font-size: 0.82rem; }
+  .search-section-title { padding: 0 16px; }
+  .search-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px; padding: 0 16px; }
+  .search-suggestions { min-width: 200px; max-height: 260px; overflow-y: auto; }
 
 /* Extra small screens */
 @media (max-width: 400px) {
@@ -946,425 +946,289 @@ footer a:hover { color: #999; text-decoration: none; }
 /* ── TEXT SELECTION ─────────────────────────────────── */
 ::selection { background: rgba(229,9,20,0.35); color: white; }
 
-/* ══════════════════════════════════════════════════════
-   SEARCH — SUGGESTIONS DROPDOWN
-══════════════════════════════════════════════════════ */
-.nav-search { position: relative; }
-
+/* ── SEARCH SUGGESTIONS DROPDOWN ───────────────────── */
 .search-suggestions {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%; transform: translateX(-50%);
-  width: 340px;
-  z-index: 9999;
-  background: #141414;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.04);
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 500;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.85);
   overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(-6px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  display: none;
+  min-width: 280px;
 }
-.search-suggestions.visible {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateX(-50%) translateY(0);
-}
-.sugg-header {
-  padding: 10px 14px 6px;
-  font-size: 0.6rem;
-  color: #555;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
-  font-weight: 700;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
+.search-suggestions.visible { display: block; }
 .sugg-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 14px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: background 0.12s;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.15s;
 }
-.sugg-item:last-child { border-bottom: none; }
-.sugg-item:hover { background: rgba(255,255,255,0.06); }
+.sugg-item:hover { background: rgba(255,255,255,0.07); }
 .sugg-thumb {
-  width: 72px; height: 40px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #222;
-  display: block;
+  width: 60px; height: 34px; border-radius: 3px;
+  object-fit: cover; flex-shrink: 0; background: #2a2a2a;
 }
-.sugg-info { flex: 1; overflow: hidden; min-width: 0; }
-.sugg-title {
-  font-size: 0.83rem;
-  font-weight: 600;
-  color: #f0f0f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 2px;
-}
-.sugg-meta { font-size: 0.68rem; color: #666; }
-.sugg-type-pill {
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: rgba(229,9,20,0.15);
-  color: #e50914;
-  border: 1px solid rgba(229,9,20,0.2);
-  flex-shrink: 0;
-}
+.sugg-info { flex: 1; overflow: hidden; }
+.sugg-title { font-size: 0.82rem; font-weight: 600; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sugg-meta  { font-size: 0.7rem; color: #777; margin-top: 1px; }
+.sugg-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 2px 0; }
+.sugg-header { padding: 6px 12px 3px; font-size: 0.65rem; color: #555; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; }
 
-/* Mobile suggestions */
-.mobile-search-bar .search-suggestions {
-  left: 0; right: 0;
-  top: calc(100% + 4px);
-  transform: none;
-  width: auto;
-}
-.mobile-search-bar .search-suggestions.visible {
-  transform: translateY(0);
-}
-
-/* ══════════════════════════════════════════════════════
-   SEARCH — RESULTS PAGE
-══════════════════════════════════════════════════════ */
+/* ── SEARCH RESULTS PAGE ────────────────────────────── */
 .search-page {
   display: none;
-  padding: 92px 56px 80px;
+  padding: 90px 0 80px;
   min-height: 100vh;
-  animation: srFadeIn 0.3s ease both;
+  background: var(--bg);
 }
 .search-page.active { display: block; }
-@keyframes srFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* Header */
-.search-page-header { margin-bottom: 36px; }
-.search-page-query {
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: #888;
-  margin-bottom: 2px;
-  letter-spacing: 0.2px;
+/* Header bar */
+.search-page-header {
+  padding: 0 60px;
+  margin-bottom: 36px;
+  display: flex; align-items: baseline; gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 20px;
 }
-.search-page-query strong {
+.search-page-query {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; font-weight: 400; letter-spacing: 1px;
   color: #fff;
-  font-weight: 700;
-  font-size: 1.5rem;
+}
+.search-page-query span {
+  color: var(--netflix-red);
+  position: relative;
 }
 .search-page-count {
-  font-size: 0.75rem;
-  color: #444;
-  letter-spacing: 0.3px;
+  font-size: 0.75rem; color: #555;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-left: auto; flex-shrink: 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 4px 12px; border-radius: 20px;
 }
 
-/* ── SPOTLIGHT (top result) ── */
+/* ── TOP RESULT SPOTLIGHT ── */
 .search-spotlight {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0;
-  border-radius: 12px;
-  margin-bottom: 52px;
-  cursor: pointer;
-  overflow: hidden;
   position: relative;
-  background: #0d0d0d;
+  margin: 0 60px 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex; align-items: flex-end;
+  min-height: 340px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 4px 40px rgba(0,0,0,0.6);
-  transition: border-color 0.25s, box-shadow 0.25s;
-  min-height: 220px;
 }
 .search-spotlight:hover {
-  border-color: rgba(255,255,255,0.15);
-  box-shadow: 0 8px 60px rgba(0,0,0,0.8);
+  transform: translateY(-3px);
+  box-shadow: 0 32px 100px rgba(0,0,0,0.9);
 }
-/* Backdrop blur bg */
-.spotlight-bg {
+
+/* Blurred backdrop fills the card */
+.search-spotlight::before {
+  content: '';
   position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  filter: blur(40px) brightness(0.18);
-  transform: scale(1.1);
+  background: var(--spotlight-bg, linear-gradient(135deg,#1a1a1a,#0d0d0d)) center/cover no-repeat;
+  filter: blur(0px) brightness(0.45);
+  transition: filter 0.4s;
   z-index: 0;
 }
+.search-spotlight:hover::before { filter: blur(0px) brightness(0.55); }
+
+/* Gradient overlay */
+.search-spotlight::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, transparent 100%),
+    linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 50%);
+  z-index: 1;
+}
+
 .spotlight-poster {
-  width: 150px;
-  flex-shrink: 0;
-  position: relative; z-index: 1;
-  align-self: stretch;
-  overflow: hidden;
+  position: absolute; right: 48px; top: 50%;
+  transform: translateY(-50%);
+  width: 140px; flex-shrink: 0;
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.08);
+  z-index: 2;
+  transition: transform 0.3s ease;
 }
-.spotlight-poster img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.search-spotlight:hover .spotlight-poster { transform: translateY(-54%) scale(1.03); }
+.spotlight-poster img { width: 100%; display: block; aspect-ratio: 2/3; object-fit: cover; }
+
 .spotlight-info {
-  position: relative; z-index: 1;
-  padding: 28px 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: linear-gradient(90deg, rgba(13,13,13,0.4) 0%, rgba(13,13,13,0.85) 40%, #0d0d0d 100%);
+  position: relative; z-index: 2;
+  padding: 36px 40px;
+  max-width: 620px;
 }
 .spotlight-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  color: var(--netflix-red);
-  background: rgba(229,9,20,0.1);
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--netflix-red);
+  margin-bottom: 10px;
+  background: rgba(229,9,20,0.12);
   border: 1px solid rgba(229,9,20,0.25);
-  border-radius: 4px;
-  padding: 3px 9px;
-  margin-bottom: 12px;
-  width: fit-content;
+  padding: 4px 10px; border-radius: 4px;
 }
 .spotlight-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 2.8rem;
-  line-height: 0.95;
-  letter-spacing: 1.5px;
-  color: #fff;
-  margin-bottom: 12px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  font-size: 3.2rem; line-height: 0.95; letter-spacing: 1.5px;
+  margin-bottom: 14px; color: #fff;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
 }
 .spotlight-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 14px; flex-wrap: wrap;
 }
+.spotlight-year { color: #aaa; font-size: 0.82rem; font-weight: 500; }
 .spotlight-rating {
-  color: #46d369;
-  font-weight: 700;
-  font-size: 0.82rem;
-  display: flex; align-items: center; gap: 3px;
+  color: var(--green); font-weight: 700; font-size: 0.85rem;
+  display: flex; align-items: center; gap: 4px;
 }
-.spotlight-year { color: #666; font-size: 0.78rem; }
 .spotlight-hd {
-  border: 1px solid #333;
-  color: #555;
-  padding: 1px 5px;
-  font-size: 0.62rem;
-  border-radius: 3px;
-  letter-spacing: 0.5px;
-}
-.spotlight-genres {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.spotlight-genre-tag {
-  font-size: 0.68rem;
-  color: #888;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 3px 10px;
-  letter-spacing: 0.3px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ccc; padding: 2px 7px; font-size: 0.65rem;
+  border-radius: 3px; letter-spacing: 1px; font-weight: 700;
 }
 .spotlight-overview {
-  font-size: 0.83rem;
-  line-height: 1.65;
-  color: #999;
-  max-width: 520px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 18px;
+  font-size: 0.88rem; line-height: 1.7; color: rgba(220,220,220,0.85);
+  max-width: 480px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  margin-bottom: 0;
 }
-.spotlight-btns {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+.spotlight-btns { display: flex; gap: 10px; margin-top: 20px; }
+.spotlight-btns .btn-play { background: white; color: #000; }
+.spotlight-btns .btn-play:hover { background: rgba(255,255,255,0.88); }
+.spotlight-btns .btn-info { background: rgba(100,100,100,0.45); color: white; backdrop-filter: blur(8px); }
 
-/* ── SECTION TITLES ── */
+/* ── SECTION HEADINGS ── */
 .search-section { margin-bottom: 48px; }
 .search-section-title {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #666;
+  padding: 0 60px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #666;
   margin-bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex; align-items: center; gap: 12px;
 }
-.search-section-title .stl-icon {
-  font-size: 0.85rem;
-}
-.search-section-title .stl-count {
-  color: #333;
-  font-weight: 400;
-  font-size: 0.62rem;
-  letter-spacing: 0.5px;
+.search-section-title .sec-icon {
+  width: 24px; height: 24px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
 }
 .search-section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.07) 0%, transparent 100%);
 }
 
 /* ── SEARCH GRID ── */
 .search-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 4px;
+  padding: 0 60px;
 }
+
 .search-card {
   aspect-ratio: 16/9;
-  border-radius: 5px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  background: #161616;
-  transition: transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94),
-              box-shadow 0.22s ease;
-  isolation: isolate;
+  border-radius: 6px; overflow: hidden;
+  cursor: pointer; position: relative;
+  background: #111;
+  transition: transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
+              box-shadow 0.25s ease,
+              z-index 0s 0.25s;
+  z-index: 1;
 }
 .search-card:hover {
   transform: scale(1.06);
-  box-shadow: 0 10px 36px rgba(0,0,0,0.85);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.85);
   z-index: 5;
+  transition: transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
+              box-shadow 0.25s ease,
+              z-index 0s;
 }
-.search-card img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: filter 0.22s;
-}
-.search-card:hover img { filter: brightness(0.75); }
-.search-card-overlay {
+.search-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Subtle always-on gradient at bottom */
+.search-card::before {
+  content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.92) 0%,
-    rgba(0,0,0,0.4) 40%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 12px;
-}
-.search-card:hover .search-card-overlay { opacity: 1; }
-.search-card-title {
-  font-size: 0.77rem;
-  font-weight: 700;
-  line-height: 1.3;
-  color: #fff;
-  margin-bottom: 4px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.search-card-meta {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-.search-card-rating {
-  font-size: 0.67rem;
-  color: #46d369;
-  font-weight: 700;
-}
-.search-card-year { font-size: 0.67rem; color: #777; }
-/* Always-visible bottom title strip on resting card */
-.search-card-strip {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-  padding: 18px 8px 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.85);
-  pointer-events: none;
+  background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 45%);
+  z-index: 1;
+  opacity: 0.7;
   transition: opacity 0.2s;
 }
-.search-card:hover .search-card-strip { opacity: 0; }
+.search-card:hover::before { opacity: 1; }
 
-/* ── LOADING ── */
+.search-card-overlay {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 10px 12px 9px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, transparent 55%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.search-card:hover .search-card-overlay { opacity: 1; }
+
+.search-card-title {
+  font-size: 0.74rem; font-weight: 700; line-height: 1.25;
+  margin-bottom: 4px; color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.search-card-meta { display: flex; gap: 6px; align-items: center; }
+.search-card-rating {
+  font-size: 0.65rem; color: var(--green); font-weight: 700;
+  display: flex; align-items: center; gap: 2px;
+}
+.search-card-year { font-size: 0.65rem; color: #aaa; }
+.search-card-type {
+  font-size: 0.58rem; letter-spacing: 0.8px; text-transform: uppercase;
+  color: #888; font-weight: 600;
+  background: rgba(255,255,255,0.08);
+  padding: 1px 5px; border-radius: 3px;
+  margin-left: auto;
+}
+
+/* ── CARD RANK BADGE ── */
+.search-card-rank {
+  position: absolute; top: 8px; left: 8px; z-index: 3;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px;
+  background: rgba(0,0,0,0.7); color: #aaa;
+  padding: 2px 6px; border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  opacity: 0; transition: opacity 0.2s;
+}
+.search-card:hover .search-card-rank { opacity: 1; }
+
+/* ── EMPTY / LOADING ── */
+.search-empty {
+  text-align: center; padding: 100px 20px; color: #444;
+}
+.search-empty .se-icon { font-size: 3rem; margin-bottom: 18px; filter: grayscale(1) opacity(0.5); }
+.search-empty .se-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem; letter-spacing: 1px;
+  color: #555; margin-bottom: 10px; font-weight: 400;
+}
+.search-empty .se-sub { font-size: 0.82rem; line-height: 1.7; color: #444; max-width: 360px; margin: 0 auto; }
+
 .search-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 100px 20px;
-  color: #444;
-  font-size: 0.85rem;
-  letter-spacing: 0.3px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 18px; padding: 100px;
+  color: #444; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase;
 }
 .search-loading-spinner {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   border: 2px solid rgba(255,255,255,0.06);
   border-top-color: var(--netflix-red);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-/* ── EMPTY STATE ── */
-.search-empty {
-  text-align: center;
-  padding: 100px 24px;
-}
-.search-empty .se-icon {
-  font-size: 3.2rem;
-  margin-bottom: 20px;
-  opacity: 0.5;
-}
-.search-empty .se-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #777;
-  margin-bottom: 10px;
-}
-.search-empty .se-sub {
-  font-size: 0.83rem;
-  line-height: 1.7;
-  color: #444;
-  max-width: 380px;
-  margin: 0 auto;
-}
-.search-empty .se-tips {
-  margin-top: 28px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.se-tip-tag {
-  font-size: 0.75rem;
-  color: #666;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 20px;
-  padding: 5px 14px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.se-tip-tag:hover {
-  background: rgba(255,255,255,0.09);
-  color: #ccc;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
 }
 
 </style>
@@ -2263,15 +2127,14 @@ async function fetchSuggestions(query) {
     const items = (data.results || []).filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && (r.poster_path || r.backdrop_path)).slice(0, 6);
 
     const html = items.length ? `
-      <div class="sugg-header">Suggestions</div>
+      <div class="sugg-header">Top Matches</div>
       ${items.map(m => `
         <div class="sugg-item" onclick="selectSuggestion(${m.id}, '${(m.title||m.name||'').replace(/'/g,"\\'")}', '${m.media_type}')">
-          <img class="sugg-thumb" src="${IMG}w92${m.backdrop_path || m.poster_path}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <img class="sugg-thumb" src="${IMG}w92${m.backdrop_path || m.poster_path}" alt="" loading="lazy">
           <div class="sugg-info">
             <div class="sugg-title">${m.title || m.name}</div>
-            <div class="sugg-meta">${(m.release_date || m.first_air_date || '').slice(0,4)}${m.vote_average ? ' · ★ ' + m.vote_average.toFixed(1) : ''}</div>
+            <div class="sugg-meta">${m.media_type === 'tv' ? 'TV Series' : 'Movie'} · ${(m.release_date || m.first_air_date || '').slice(0,4)} · ★ ${m.vote_average?.toFixed(1)||'—'}</div>
           </div>
-          <span class="sugg-type-pill">${m.media_type === 'tv' ? 'TV' : 'Film'}</span>
         </div>`).join('')}` : '';
 
     ['searchSuggestions','mobileSearchSuggestions'].forEach(id => {
@@ -2342,10 +2205,7 @@ async function filterMovies(query) {
         <div class="search-empty">
           <div class="se-icon">🎬</div>
           <div class="se-title">No results for "${query}"</div>
-          <div class="se-sub">Try a different spelling, a genre name, or an actor.</div>
-          <div class="se-tips">
-            ${['Action','Comedy','Horror','Drama','Sci-Fi','Romance','Thriller','Animation'].map(g=>`<span class="se-tip-tag" onclick="handleSearchInput('${g}')">${g}</span>`).join('')}
-          </div>
+          <div class="se-sub">Try different keywords, a movie title, actor name, or genre like "action" or "comedy".</div>
         </div>`;
       return;
     }
@@ -2363,13 +2223,13 @@ async function filterMovies(query) {
       topDetail = {...topResult, ...(await detailRes.json())};
     } catch(e) {}
 
-    const topGenresList = (topDetail.genres || []).map(g => g.name).slice(0,4) ||
-                          (topDetail.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean).slice(0,4);
+    const topGenres = (topDetail.genres || []).map(g => g.name).slice(0,3).join(' · ') ||
+                      (topDetail.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean).slice(0,3).join(' · ');
     const topYear   = (topDetail.release_date || topDetail.first_air_date || '').slice(0,4);
     const topPoster = topDetail.poster_path ? `${IMG}w342${topDetail.poster_path}` : (topDetail.backdrop_path ? `${IMG}w500${topDetail.backdrop_path}` : '');
-    const topBackdrop = topDetail.backdrop_path ? `${IMG}w780${topDetail.backdrop_path}` : '';
+    const topBackdrop = topDetail.backdrop_path ? `${IMG}w1280${topDetail.backdrop_path}` : (topDetail.poster_path ? `${IMG}w500${topDetail.poster_path}` : '');
     const topTitle  = topDetail.title || topDetail.name || '';
-    const topRating = topDetail.vote_average ? topDetail.vote_average.toFixed(1) : '';
+    const topRating = topDetail.vote_average ? `★ ${topDetail.vote_average.toFixed(1)}` : '';
     const topType   = topResult.media_type === 'tv' ? 'TV Series' : 'Movie';
 
     // ── GROUP BY GENRE
@@ -2395,20 +2255,16 @@ async function filterMovies(query) {
 
     // Spotlight
     html += `
-      <div class="search-spotlight" onclick="openModal(${topResult.id}, '${topResult.media_type}')">
-        ${topBackdrop ? `<div class="spotlight-bg" style="background-image:url('${topBackdrop}')"></div>` : ''}
-        <div class="spotlight-poster">
-          ${topPoster ? `<img src="${topPoster}" alt="${topTitle.replace(/"/g,'&quot;')}" loading="lazy">` : ''}
-        </div>
+      <div class="search-spotlight" style="${topBackdrop ? `--spotlight-bg: url('${topBackdrop}'); background: var(--spotlight-bg) center/cover no-repeat;` : ''}" onclick="openModal(${topResult.id}, '${topResult.media_type}')">
         <div class="spotlight-info">
-          <div class="spotlight-badge">★ Top Result &nbsp;·&nbsp; ${topType}</div>
+          <div class="spotlight-badge">🏆 Top Result &nbsp;·&nbsp; ${topType}</div>
           <div class="spotlight-title">${topTitle}</div>
           <div class="spotlight-meta">
-            ${topRating ? `<span class="spotlight-rating">★ ${topRating}</span>` : ''}
+            ${topRating ? `<span class="spotlight-rating">${topRating}</span>` : ''}
             ${topYear ? `<span class="spotlight-year">${topYear}</span>` : ''}
             <span class="spotlight-hd">HD</span>
           </div>
-          ${topGenresList.length ? `<div class="spotlight-genres">${topGenresList.map(g=>`<span class="spotlight-genre-tag">${g}</span>`).join('')}</div>` : ''}
+          ${topGenres ? `<div style="font-size:0.75rem;color:#888;margin-bottom:10px;letter-spacing:0.3px">${topGenres}</div>` : ''}
           <div class="spotlight-overview">${topDetail.overview || ''}</div>
           <div class="spotlight-btns">
             <button class="btn-play" onclick="event.stopPropagation(); openModal(${topResult.id}, '${topResult.media_type}')">
@@ -2419,15 +2275,16 @@ async function filterMovies(query) {
             </button>
           </div>
         </div>
+        ${topPoster ? `<div class="spotlight-poster"><img src="${topPoster}" alt="${topTitle.replace(/"/g,'&quot;')}" loading="lazy"></div>` : ''}
       </div>`;
 
     // Movies section
     if (movies.length) {
       html += `
         <div class="search-section">
-          <div class="search-section-title"><span class="stl-icon">🎬</span> Movies <span class="stl-count">${movies.length} results</span></div>
+          <div class="search-section-title"><span class="sec-icon">🎬</span> Movies <span style="color:#444;font-weight:400">(${movies.length})</span></div>
           <div class="search-grid">
-            ${movies.slice(0,20).map(m => renderSearchCard(m)).join('')}
+            ${movies.slice(0,20).map((m,i) => renderSearchCard(m, i+1)).join('')}
           </div>
         </div>`;
     }
@@ -2436,9 +2293,9 @@ async function filterMovies(query) {
     if (shows.length) {
       html += `
         <div class="search-section">
-          <div class="search-section-title"><span class="stl-icon">📺</span> TV Series <span class="stl-count">${shows.length} results</span></div>
+          <div class="search-section-title"><span class="sec-icon">📺</span> TV Series <span style="color:#444;font-weight:400">(${shows.length})</span></div>
           <div class="search-grid">
-            ${shows.slice(0,12).map(m => renderSearchCard(m)).join('')}
+            ${shows.slice(0,12).map((m,i) => renderSearchCard(m, i+1)).join('')}
           </div>
         </div>`;
     }
@@ -2447,7 +2304,7 @@ async function filterMovies(query) {
     topGenreSections.forEach(([genre, items]) => {
       html += `
         <div class="search-section">
-          <div class="search-section-title">${genre} <span class="stl-count">${items.length} titles</span></div>
+          <div class="search-section-title"><span class="sec-icon">🎭</span> ${genre}</div>
           <div class="search-grid">
             ${items.slice(0,10).map(m => renderSearchCard(m)).join('')}
           </div>
@@ -2466,21 +2323,23 @@ async function filterMovies(query) {
   }
 }
 
-function renderSearchCard(m) {
+function renderSearchCard(m, rank) {
   const img   = m.backdrop_path ? `${IMG}w500${m.backdrop_path}` : `${IMG}w342${m.poster_path}`;
-  const title = (m.title || m.name || '').replace(/"/g,'&quot;');
+  const title = m.title || m.name || '';
   const year  = (m.release_date || m.first_air_date || '').slice(0,4);
   const rating = m.vote_average ? m.vote_average.toFixed(1) : '';
   const type   = m.media_type || 'movie';
+  const typeLabel = type === 'tv' ? 'Series' : 'Film';
   return `
     <div class="search-card" onclick="openModal(${m.id}, '${type}')">
-      <img src="${img}" alt="${title}" loading="lazy">
-      <div class="search-card-strip">${title}</div>
+      <img src="${img}" alt="${title.replace(/"/g,'&quot;')}" loading="lazy">
+      ${rank ? `<div class="search-card-rank">#${rank}</div>` : ''}
       <div class="search-card-overlay">
         <div class="search-card-title">${title}</div>
         <div class="search-card-meta">
           ${rating ? `<span class="search-card-rating">★ ${rating}</span>` : ''}
-          ${year   ? `<span class="search-card-year">${year}</span>` : ''}
+          ${year ? `<span class="search-card-year">${year}</span>` : ''}
+          <span class="search-card-type">${typeLabel}</span>
         </div>
       </div>
     </div>`;
