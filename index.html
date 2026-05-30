@@ -697,9 +697,6 @@ footer a:hover { color: #999; text-decoration: none; }
 }
 .movie-card:hover .hero-play-badge { opacity: 1; }
 
-/* Mobile search bar hidden on desktop */
-.mobile-search-bar { display: none; }
-
 /* ── HAMBURGER MENU BUTTON (mobile only) ───────────── */
 .hamburger-btn {
   display: none;
@@ -869,42 +866,9 @@ footer a:hover { color: #999; text-decoration: none; }
   footer .footer-links { gap: 10px; }
   .footer-logo { font-size: 1.1rem; margin-bottom: 12px; }
 
-  /* ── Mobile search bar ── */
-  .mobile-search-bar {
-    display: block;
-    position: fixed; top: 56px; left: 0; right: 0; z-index: 99;
-    background: rgba(15,15,15,0.97);
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    padding: 8px 14px;
-  }
-  .mobile-search-inner {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 0 10px;
-  }
-  .mobile-search-icon { font-size: 0.85rem; color: rgba(255,255,255,0.5); flex-shrink: 0; }
-  .mobile-search-input {
-    flex: 1; background: none; border: none; outline: none;
-    color: white; font-size: 0.9rem; font-family: inherit;
-    padding: 10px 0;
-    -webkit-appearance: none;
-  }
-  .mobile-search-input::placeholder { color: rgba(255,255,255,0.4); }
-  .mobile-search-input::-webkit-search-cancel-button { display: none; }
-  .mobile-search-clear {
-    background: none; border: none; color: rgba(255,255,255,0.5);
-    font-size: 0.85rem; cursor: pointer; padding: 4px; flex-shrink: 0;
-    transition: color 0.15s;
-  }
-  .mobile-search-clear:hover { color: white; }
-
-  /* Push content below mobile search bar */
-  .hero { padding-top: 0; margin-top: 40px; }
-  .rows-container.search-active { padding-top: 136px; }
-
-
+  /* ── My List empty state ── */
+  #myListEmpty { padding: 20px 16px; }
+}
 
 /* Extra small screens */
 @media (max-width: 400px) {
@@ -996,17 +960,6 @@ footer a:hover { color: #999; text-decoration: none; }
   <a href="#" id="mNavMovies" onclick="goSection('movies');  closeMobileNav()">Movies</a>
   <a href="#" id="mNavNew"    onclick="goSection('new');     closeMobileNav()">New &amp; Popular</a>
   <a href="#" id="mNavMyList" onclick="goSection('mylist');  closeMobileNav()">My List</a>
-</div>
-
-<!-- MOBILE SEARCH BAR -->
-<div class="mobile-search-bar" id="mobileSearchBar">
-  <div class="mobile-search-inner">
-    <span class="mobile-search-icon">&#128269;</span>
-    <input type="search" id="mobileSearchInput" class="mobile-search-input"
-      placeholder="Search titles, people, genres..." autocomplete="off"
-      oninput="filterMovies(this.value); document.getElementById('searchInput').value = this.value;">
-    <button class="mobile-search-clear" id="mobileSearchClear" onclick="clearMobileSearch()" style="display:none">&#x2715;</button>
-  </div>
 </div>
 <div class="hero" id="hero">
   <div class="hero-bg" id="heroBg"></div>
@@ -2113,8 +2066,6 @@ function goHome() {
   document.querySelector('.rows-container').classList.remove('search-active');
   document.getElementById('searchResults').classList.remove('active');
   document.getElementById('searchInput').value = '';
-  const mInp = document.getElementById('mobileSearchInput');
-  if (mInp) { mInp.value = ''; document.getElementById('mobileSearchClear').style.display = 'none'; }
   showOnlyRows(SECTION_ROWS.home);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   setNavActive('navHome');
@@ -2276,24 +2227,6 @@ async function findAndPlayMovie(query) {
     showVoiceStatus('❌ Search failed');
   }
 }
-
-// ── MOBILE SEARCH ────────────────────────────────────
-function clearMobileSearch() {
-  const inp = document.getElementById('mobileSearchInput');
-  if (inp) inp.value = '';
-  document.getElementById('mobileSearchClear').style.display = 'none';
-  filterMovies('');
-  document.getElementById('searchInput').value = '';
-}
-// Show/hide clear button as user types
-document.addEventListener('DOMContentLoaded', () => {
-  const mInp = document.getElementById('mobileSearchInput');
-  if (mInp) {
-    mInp.addEventListener('input', () => {
-      document.getElementById('mobileSearchClear').style.display = mInp.value ? 'block' : 'none';
-    });
-  }
-});
 
 // ── MOBILE NAV DRAWER ────────────────────────────────
 function toggleMobileNav() {
